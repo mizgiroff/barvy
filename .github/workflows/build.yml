@@ -16,11 +16,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Unpack project zip if present
+      - name: Find and unpack latest barvy_v*.zip
+        id: prep
         run: |
-          if [ -f barvy_v24_26.11.19.zip ]; then
-            unzip -o barvy_v24_26.11.19.zip -x ".github/*"
-          fi
+          ZIP_FILE=$(ls -1v barvy_v*.zip | tail -n 1)
+          echo "Using archive: $ZIP_FILE"
+          TAG="${ZIP_FILE#barvy_}"
+          TAG="${TAG%.zip}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "apk_name=barvy_${TAG}.apk" >> "$GITHUB_OUTPUT"
+          mkdir -p src_build
+          unzip -oq "$ZIP_FILE" -d src_build
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -34,27 +40,29 @@ jobs:
           gradle-version: '8.7'
 
       - name: Run unit tests
+        working-directory: src_build
         run: gradle test
 
       - name: Build Debug APK
+        working-directory: src_build
         run: gradle assembleDebug
 
       - name: Prepare versioned APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk barvy_v24_26.11.19.apk
-          ls -lh barvy_v24_26.11.19.apk
+          cp src_build/app/build/outputs/apk/debug/app-debug.apk "${{ steps.prep.outputs.apk_name }}"
+          ls -lh "${{ steps.prep.outputs.apk_name }}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: barvy_v24_26.11.19
-          path: barvy_v24_26.11.19.apk
+          name: ${{ steps.prep.outputs.tag }}
+          path: ${{ steps.prep.outputs.apk_name }}
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v24_26.11.19
-          name: Барви v24_26.11.19
+          tag_name: ${{ steps.prep.outputs.tag }}
+          name: Barvy ${{ steps.prep.outputs.tag }}
           body: |
-            Автоматическая сборка приложения Барви (Львов и область).
-          files: barvy_v24_26.11.19.apk
+            Automatic build from ${{ steps.prep.outputs.apk_name }}.
+          files: ${{ steps.prep.outputs.apk_name }}
