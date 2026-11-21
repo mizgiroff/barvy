@@ -49,13 +49,13 @@ jobs:
         working-directory: ${{ steps.proj.outputs.workdir }}
         run: gradle test
 
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: ${{ steps.proj.outputs.workdir }}
-        run: gradle assembleDebug
+        run: gradle assembleRelease
 
       - name: Prepare versioned APK
         run: |
-          cp "${{ steps.proj.outputs.workdir }}/app/build/outputs/apk/debug/app-debug.apk" "barvy_v${{ steps.ver.outputs.version || steps.proj.outputs.version }}.apk"
+          cp "${{ steps.proj.outputs.workdir }}/app/build/outputs/apk/release/app-release.apk" "barvy_v${{ steps.proj.outputs.version }}.apk"
           ls -lh "barvy_v${{ steps.proj.outputs.version }}.apk"
 
       - name: Upload APK artifact
@@ -74,7 +74,7 @@ jobs:
           body: |
             Barvy v${{ steps.proj.outputs.version }} (Lviv & Zakarpattia Oblasts).
             - Bilingual UI: Ukrainian & English
-            - Two-level Oblast & City catalog filter (596 landmarks)
+            - Two-level Oblast & City catalog filter (597 landmarks)
             - Geofencing + Driving Mode (Foreground Service) for instant auto-switch on the road
             - Built-in Permissions & Battery setup guide
           files: barvy_v${{ steps.proj.outputs.version }}.apk
