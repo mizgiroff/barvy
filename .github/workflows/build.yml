@@ -61,7 +61,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: barvy_v${{ steps.proj.outputs.version }}
+          name: barvy_v${{ steps.proj.outputs.version }}_apk
           path: barvy_v${{ steps.proj.outputs.version }}.apk
           retention-days: 3
           if-no-files-found: error
@@ -74,7 +74,7 @@ jobs:
           body: |
             Barvy v${{ steps.proj.outputs.version }} (Lviv & Zakarpattia Oblasts).
             - Bilingual UI: Ukrainian & English
-            - Two-level Oblast & City catalog filter (597 landmarks)
+            - Two-level Oblast & City catalog filter (602 landmarks)
             - Geofencing + Driving Mode (Foreground Service) for instant auto-switch on the road
             - Built-in Permissions & Battery setup guide
           files: barvy_v${{ steps.proj.outputs.version }}.apk
